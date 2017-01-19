@@ -1,17 +1,29 @@
-FROM jeanblanchard/busybox-java:8
+FROM registry.cn-hangzhou.aliyuncs.com/okoer/kafka:kafka
 
-ENV KAFKA_RELEASE="http://apache.mirrors.spacedump.net/kafka/0.8.2.1/kafka_2.10-0.8.2.1.tgz"
-ENV KAFKA_FILE="/tmp/kafka.tar.gz"
+MAINTAINER Wurstmeister
 
-RUN DEBIAN_FRONTEND="noninteractive" \
-    mkdir -p /tmp/kafka && \
-    curl -Lo $KAFKA_FILE $KAFKA_RELEASE && \
-    gunzip < $KAFKA_FILE | tar -C /tmp/kafka -xvf - && \
-    mv /tmp/kafka/* /opt/kafka && \
-    ls /opt/kafka/bin
+#RUN apk add --update unzip wget curl docker jq coreutils
+#
+#ENV KAFKA_VERSION="0.10.1.0" SCALA_VERSION="2.11"
+#ADD download-kafka.sh /tmp/download-kafka.sh
+#RUN chmod a+x /tmp/download-kafka.sh && sync && /tmp/download-kafka.sh && tar xfz /tmp/kafka_${SCALA_VERSION}-${KAFKA_VERSION}.tgz -C /opt && rm /tmp/kafka_${SCALA_VERSION}-${KAFKA_VERSION}.tgz && ln -s /opt/kafka_${SCALA_VERSION}-${KAFKA_VERSION} /opt/kafka
+
+VOLUME ["/kafka"]
 
 USER root
 
 ADD scripts/mirrormaker.sh mirrormaker.sh
 
-ENTRYPOINT ["sh", "-ex", "./mirrormaker.sh"]
+CMD ["sh", "-ex", "./mirrormaker.sh"]
+
+#ENV KAFKA_HOME /opt/kafka
+#ENV PATH ${PATH}:${KAFKA_HOME}/bin
+#ADD start-kafka.sh /usr/bin/start-kafka.sh
+#ADD broker-list.sh /usr/bin/broker-list.sh
+#ADD create-topics.sh /usr/bin/create-topics.sh
+## The scripts need to have executable permission
+#RUN chmod a+x /usr/bin/start-kafka.sh && \
+#    chmod a+x /usr/bin/broker-list.sh && \
+#    chmod a+x /usr/bin/create-topics.sh
+## Use "exec" form so that it runs as PID 1 (useful for graceful shutdown)
+#CMD ["start-kafka.sh"]

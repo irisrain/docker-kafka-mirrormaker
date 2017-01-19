@@ -2,10 +2,15 @@ DEFAULT_PRODUCERS=1
 DEFAULT_STREAMS=1
 # DEFAULT_OFFSET_COMMIT_INTERVAL=60000
 # DEFAULT_ABORT_ON_FAILURE="true"
-DEFAULT_GROUP_ID="KafkaMirror"
-DEFAULT_OFFSET_RESET="largest"
+DEFAULT_GROUP_ID=KafkaMirror
+#DEFAULT_OFFSET_RESET="largest"
+DEFAULT_OFFSET_RESET=smallest
+DEFAULT_bootstrap_servers=localhost:9092
+DEFAULT_WHITE_LIST=\".*\"
 
-if [ -n "$WHITE_LIST" ]; then
+if [ -z "$WHITE_LIST" ]; then
+    WHITE_LIST="--whitelist $DEFAULT_WHITE_LIST"
+else
     WHITE_LIST="--whitelist $WHITE_LIST"
 fi
 
@@ -21,7 +26,7 @@ if [ -z "$STREAM_COUNT" ]; then
     STREAM_COUNT=$DEFAULT_STREAMS
 fi
 
-if [ -z "$OFFSET_RESET" ]; then
+if [ -z "$CONSUMER_OFFSET_RESET" ]; then
     OFFSET_RESET=$DEFAULT_OFFSET_RESET
 fi
 
@@ -42,11 +47,15 @@ if [ -z "$CONSUMER_ZK_CONNECT" ]; then
     exit 2
 fi
 
-if [ -z "$DOWNSTREAM_BROKERS" ]; then
-    echo "Specify DOWNSTREAM_BROKERS"
+#if [ -z "$DOWNSTREAM_BROKERS" ]; then
+#    echo "Specify DOWNSTREAM_BROKERS"
+#    exit 3
+#fi
+
+if [ -z "$DOWNSTREAM_bootstrap" ]; then
+    CONSUMER_GROUP_ID=$DEFAULT_bootstrap_servers
     exit 3
 fi
-
 
 cat <<- EOF > ~/consumer.config
     zookeeper.connect=$CONSUMER_ZK_CONNECT
@@ -55,17 +64,25 @@ cat <<- EOF > ~/consumer.config
 EOF
 
 
+#cat <<- EOF > ~/producer.config
+#    metadata.broker.list=$DOWNSTREAM_BROKERS
+#EOF
+
 cat <<- EOF > ~/producer.config
-    metadata.broker.list=$DOWNSTREAM_BROKERS
+    bootstrap.servers=$DOWNSTREAM_bootstrap
 EOF
 
-/bin/ash -C /opt/kafka/bin/kafka-run-class.sh kafka.tools.MirrorMaker \
---consumer.config ~/consumer.config \
---producer.config ~/producer.config \
---num.producers $PRODUCER_COUNT \
---num.streams $STREAM_COUNT \
-$WHITE_LIST \
-$BLACK_LIST \
+/bin/bash -C /opt/kafka/bin/kafka-run-class.sh kafka.tools.MirrorMaker \
+--consumer.config ~/consumer.config --producer.config ~/producer.config \
+--num.streams  $STREAM_COUNT $WHITE_LIST $BLACK_LIST 
+
+#/bin/bash -C /opt/kafka/bin/kafka-run-class.sh kafka.tools.MirrorMaker \
+#--consumer.config ~/consumer.config \
+#--producer.config ~/producer.config --whitelist=".*"
+#--num.producers $PRODUCER_COUNT \
+#--num.streams $STREAM_COUNT \
+#$WHITE_LIST \
+#$BLACK_LIST \
 # --offset.commit.interval.ms $OFFSET_COMMIT_INTERVAL
 # --abort.on.send.failure $ABORT_ON_FAILURE
 

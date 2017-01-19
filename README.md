@@ -1,7 +1,7 @@
 # Docker Kafka MirrorMaker
 Docker container that runs Kafka's MirrorMaker.
 
-Kafka Version: 0.8.2.1
+Kafka Version: 0.10.1.0
 
 ## Usage
 [The MirrorMaker documentation says](https://cwiki.apache.org/confluence/pages/viewpage.action?pageId=27846330):
@@ -13,18 +13,18 @@ Kafka Version: 0.8.2.1
 The container expects the following environment variables to be passed in:
 
 * `CONSUMER_ZK_CONNECT` - Zookeeper connection string for source, including port and chroot.
-* `DOWNSTREAM_BROKERS` - Brokers to receive mirrored messages
 * `WHITE_LIST` - (optional) White list of topics, if used, do not use black list
-* `BLACK_LIST` - (optional) Black list of topics, if used, do not use white list
 * `CONSUMER_GROUP_ID` - (optional) Defaults to 1
-* `PRODUCER_COUNT` - (optional) Defaults to 1
 * `STREAM_COUNT` - (optional) Defaults to 1
+* `DOWNSTREAM_bootstrap` - Brokers to receive mirrored messages
+* `CONSUMER_OFFSET_RESET` - largest or smallest
+
 
 <!-- * `ABORT_ON_FAILURE` - (optional) Kill MirrorMaker on failure. Defaults to true.
 * `OFFSET_COMMIT_INTERVAL` - (optional) Defaults to 60000 -->
 
 ### Command
-`docker run -e WHITE_LIST="topic" -e CONSUMER_ZK_CONNECT=localhost:2181/chroot -e DOWNSTREAM_BROKERS=127.0.0.1:9092 sheeley/docker-kafka-mirrormaker`
+docker-comupse up -d
 
 ## Building
 `docker build -t sheeley/docker-kafka-mirrormaker .`

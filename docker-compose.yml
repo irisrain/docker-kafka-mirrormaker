@@ -1,0 +1,18 @@
+version: '2'
+services:
+  kafka-mirror:
+    #image: registry.cn-hangzhou.aliyuncs.com/okoer/kafka:mirror
+    image: kafka-test 
+    ports:
+      - "9093:9092"
+    environment:
+#      WHITE_LIST: "a"
+      CONSUMER_ZK_CONNECT: 192.168.1.52:2181
+#      DOWNSTREAM_BROKERS: localhost:9092
+      CONSUMER_OFFSET_RESET: largest
+      CONSUMER_GROUP_ID: test-consumer-group
+      DOWNSTREAM_bootstrap: 192.168.1.62:9092
+#    volumes:
+#      - /var/run/docker.sock:/var/run/docker.sock
+#      - ./kafka:/kafka
+    container_name: kafka-mirror
